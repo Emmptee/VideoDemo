@@ -43,8 +43,12 @@ public class VideoDecoder {
 
     public void destroy() {
         isRunning = false;
-        if (audioThread != null) audioThread.interrupt();
-        if (videoThread != null) videoThread.interrupt();
+        if (audioThread != null){
+            audioThread.interrupt();
+        }
+        if (videoThread != null){
+            videoThread.interrupt();
+        }
     }
 
     public void notifyEnd(){
@@ -144,7 +148,7 @@ public class VideoDecoder {
             int outputBufferIndex = videoDecodeCodec.dequeueOutputBuffer(videoBufferInfo, TIMEOUT_US);
             if(outputBufferIndex >= 0) {
                 Image image = videoDecodeCodec.getOutputImage(outputBufferIndex);
-                Log.e("====","W:"+image.getWidth()+",,H:"+image.getHeight());
+                Log.e(TAG,"W:"+image.getWidth()+",,H:"+image.getHeight());
                 byte[] nv21 = ImageUtils.getDataFromImage(image, ImageUtils.COLOR_FormatNV21);
                 byte[] nv12 = new byte[width*height*3/2];
                 ImageNative.NV21ToNV12(nv21, nv12, width, height);
@@ -268,8 +272,9 @@ public class VideoDecoder {
                         outputBuffer.get(mAudioOutTempBuf, 0, audioBufferInfo.size);
                         outputBuffer.clear();
 
-                        if (audioTrack != null)
+                        if (audioTrack != null){
                             audioTrack.write(mAudioOutTempBuf, 0, audioBufferInfo.size);
+                        }
                         Log.e(TAG, "audio buffer " +  audioBufferInfo.presentationTimeUs);
                         callBack.decodedAudioBuffer(filePath, new AudioPackage(mAudioOutTempBuf, currentSampTime));
                     }

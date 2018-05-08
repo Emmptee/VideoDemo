@@ -46,7 +46,9 @@ public class ImageUtils {
     }
 
     public static void NV21ToNV12(byte[] nv21,byte[] nv12,int width,int height){
-        if(nv21 == null || nv12 == null)return;
+        if(nv21 == null || nv12 == null) {
+            return;
+        }
         int framesize = width*height;
         int i = 0,j = 0;
         System.arraycopy(nv21, 0, nv12, 0, framesize);

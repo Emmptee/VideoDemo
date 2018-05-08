@@ -1,5 +1,6 @@
 package com.yoyo.mediacodec.codec;
 
+import android.annotation.SuppressLint;
 import android.media.*;
 import android.os.Build;
 import android.util.Log;
@@ -28,7 +29,7 @@ public class AvcAppendEncoder
     AudioThread audioThread;
     MediaCodec videoEncodeCodec, audioEncodeCodec;
     MediaMuxer mediaMuxer;
-    boolean isAudioTrackAdded, isVideoTrackAdded, firstKeyFrameisAdd;
+    public boolean isAudioTrackAdded, isVideoTrackAdded, firstKeyFrameisAdd;
 
     ByteBuffer[] inputAudioBuffers, outputAudioBuffers;
 
@@ -198,6 +199,7 @@ public class AvcAppendEncoder
         }
     }
 
+    @SuppressLint("WrongConstant")
     public void processAudioEncodeOut(){
         int outputBufferIndex = -1;
         do{
@@ -261,6 +263,7 @@ public class AvcAppendEncoder
                 }
                 // 处理结束，释放输出缓存区资源
                 audioEncodeCodec.releaseOutputBuffer(outputBufferIndex,false);
+                Log.e(TAG,"结束，此时释放输出缓存区资源");
             }
         }while (outputBufferIndex >= 0);
     }

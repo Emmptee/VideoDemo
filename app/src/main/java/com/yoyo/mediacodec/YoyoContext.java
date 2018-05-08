@@ -10,7 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class YoyoContext {
 
-    public static final String TAG = "YOYO";
+    public static final String TAG = "YoyoContext";
 
     //待解码视频缓冲队列，静态成员！
     public static ArrayBlockingQueue<MyFrame> YUVQueue1 = new ArrayBlockingQueue<MyFrame>(20);

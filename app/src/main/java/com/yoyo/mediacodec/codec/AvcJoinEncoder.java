@@ -1,8 +1,10 @@
 package com.yoyo.mediacodec.codec;
 
+import android.annotation.SuppressLint;
 import android.media.*;
 import android.os.Build;
-import android.util.Log;
+
+import com.socks.library.KLog;
 import com.yoyo.mediacodec.YoyoContext;
 
 import java.io.File;
@@ -26,7 +28,7 @@ public class AvcJoinEncoder {
     AudioThread audioThread;
     MediaCodec videoEncodeCodec, audioEncodeCodec;
     MediaMuxer mediaMuxer;
-    boolean isAudioTrackAdded, isVideoTrackAdded, firstKeyFrameisAdd;
+    public static boolean isAudioTrackAdded, isVideoTrackAdded, firstKeyFrameisAdd;
 
     ByteBuffer[] inputAudioBuffers, outputAudioBuffers;
 
@@ -145,16 +147,17 @@ public class AvcJoinEncoder {
                 mVideoTrackIndex = addTrackToMuxer(videoEncodeCodec.getOutputFormat(), true);
             }else if(bufferInfo.flags == BUFFER_FLAG_KEY_FRAME){
                 mediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
-                Log.e(TAG, "mux avc I Frame end");
+                KLog.e(TAG, "mux avc I Frame end");
                 firstKeyFrameisAdd = true;
             }else{
                 mediaMuxer.writeSampleData(mVideoTrackIndex, outputBuffer, bufferInfo);
-                Log.e(TAG, "mux avc B Frame end");
+                KLog.e(TAG, "mux avc B Frame end");
             }
             videoEncodeCodec.releaseOutputBuffer(outputBufferIndex, false);
 
             outputBufferIndex = videoEncodeCodec.dequeueOutputBuffer(bufferInfo, TIMEOUT_USEC);
         }
+        KLog.e("编码结束========================");
     }
 
 
@@ -212,13 +215,14 @@ public class AvcJoinEncoder {
         }
     }
 
+    @SuppressLint("WrongConstant")
     public void processAudioEncodeOut(){
         int outputBufferIndex = -1;
         do{
             audioEncodeBufferInfo = new MediaCodec.BufferInfo();
             outputBufferIndex = audioEncodeCodec.dequeueOutputBuffer(audioEncodeBufferInfo,TIMEOUT_USEC);
             if(outputBufferIndex == MediaCodec. INFO_TRY_AGAIN_LATER){
-//                    Log.i(TAG,"获得编码器输出缓存区超时");
+//                    KLog.i(TAG,"获得编码器输出缓存区超时");
             }else if(outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED){
                 // 如果API小于21，APP需要重新绑定编码器的输入缓存区；
                 // 如果API大于21，则无需处理INFO_OUTPUT_BUFFERS_CHANGED
@@ -266,7 +270,7 @@ public class AvcJoinEncoder {
                     time++;
                     audioEncodeBufferInfo.presentationTimeUs = time*BUFFER_DURATION_US;
                     mediaMuxer.writeSampleData(mAudioTrackIndex, outputBuffer, audioEncodeBufferInfo);
-                    Log.e(TAG, "mux audio end " + audioEncodeBufferInfo.presentationTimeUs);
+                    KLog.e(TAG, "mux audio end " + audioEncodeBufferInfo.presentationTimeUs);
                     try {
                         Thread.sleep(5);
                     } catch (InterruptedException e) {
@@ -275,6 +279,7 @@ public class AvcJoinEncoder {
                 }
                 // 处理结束，释放输出缓存区资源
                 audioEncodeCodec.releaseOutputBuffer(outputBufferIndex,false);
+                KLog.e("音频编码结束22222222");
             }
         }while (outputBufferIndex >= 0);
     }
@@ -300,6 +305,8 @@ public class AvcJoinEncoder {
 
     public void StopThread(){
         isRuning = false;
+        audioThread.interrupt();
+        videoThread.interrupt();
         StopEncoder();
     }
 
@@ -318,11 +325,11 @@ public class AvcJoinEncoder {
                     byte[] audioBuf = audioPackage.getBytes();
                     if (audioBuf != null) {
                         try {
-                            Log.e(TAG, "sssss + " + audioBuf.length);
+                            KLog.e(TAG, "sssss + " + audioBuf.length);
                             putAudioDataToCodec(audioPackage);
                             processAudioEncodeOut();
                             if((audioEncodeBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0){
-                                Log.e("====", "===========audio end============");
+                                KLog.e(TAG, "===========audio end============");
                                 break;
                             }
                         } catch (IllegalStateException e) {

@@ -2,7 +2,8 @@ package com.yoyo.mediacodec;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+
+import com.socks.library.KLog;
 import com.yoyo.mediacodec.codec.*;
 
 import java.io.File;
@@ -17,8 +18,8 @@ public class YoyoMain extends Activity  implements DecoderInterface {
     private VideoDecoder decoder1, decoder2;
 
 
-    String path1 = "/mnt/sdcard/chengdu.mp4";
-    String path2 = "/mnt/sdcard/ping20s.mp4";
+    String path1 = "/mnt/sdcard/ffmpeg/chengdu.mp4";
+    String path2 = "/mnt/sdcard/ffmpeg/ping20s_1.mp4";
 
 //    String path1 = "/mnt/sdcard/ffmpeg/video1.mp4";
 //    String path2 = "/mnt/sdcard/ffmpeg/video2.mp4";
@@ -61,7 +62,7 @@ public class YoyoMain extends Activity  implements DecoderInterface {
 //        avcCodec.StartEncoderThread();
             avcAppendEncoder.configAudioEncodeCodec();
             avcAppendEncoder.configVideoEncodeCodec();
-
+            KLog.e(TAG, "onCreate: funType为000000" );
             decoder1.start();
         }else{
             new File(resultJoin).delete();
@@ -77,19 +78,24 @@ public class YoyoMain extends Activity  implements DecoderInterface {
 //                final int outHeight = height1 > height2 ? height1 : height2;
 //                final int outWidth = width1 > width2 ? 2*width1 : 2*width2;
 //            }
-
+            KLog.e(TAG, "onCreate: funType为1111111111" );
             decoder1.start();
             decoder2.start();
         }
-        Log.e(TAG, "START");
+        KLog.e(TAG, "START");
     }
+
+    @Override
     protected void onDestroy(){
         super.onDestroy();
+        KLog.e(TAG, "onDestroy: 准备销毁AC");
         if(null != avcJoinEncoder){
             avcJoinEncoder.StopThread();
+            KLog.e(TAG, "onDestroy: 合成附加效果之后停止线程" );
         }
         if(null != avcAppendEncoder){
             avcAppendEncoder.StopThread();
+            KLog.e(TAG, "onDestroy: 合成拼接效果后停掉线程" );
         }
     }
 
@@ -97,7 +103,7 @@ public class YoyoMain extends Activity  implements DecoderInterface {
 
     @Override
     public void decodedByteBuffer(String path, MyFrame frame, int bufferIndex) {
-        Log.e(YoyoContext.TAG, path + " " + bufferIndex);
+        KLog.e(TAG, path + " " + bufferIndex);
 
         if(funType == 0) {
             avcAppendEncoder.putVideoFrameToCodec(frame);
@@ -110,7 +116,7 @@ public class YoyoMain extends Activity  implements DecoderInterface {
                 if(this.path2.equals(path)){
                     YoyoContext.YUVQueue2.put(frame);
                 }
-                Log.e(TAG,  "size1 = " + YoyoContext.YUVQueue1.size() +  ", size2 = "+ YoyoContext.YUVQueue2.size());
+                KLog.e(TAG,  "size1 = " + YoyoContext.YUVQueue1.size() +  ", size2 = "+ YoyoContext.YUVQueue2.size());
 
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -122,10 +128,12 @@ public class YoyoMain extends Activity  implements DecoderInterface {
     @Override
     public void decodedVideoInfo(String path, int width, int height, float duration) {
         if(this.path1.equals(path)){
+            KLog.e("对标path11111111111");
             width1 = width;
             height1 = height;
         }
         if(this.path2.equals(path)){
+            KLog.e("对标path22222222222");
             width2 = width;
             height2 = height;
         }
@@ -134,8 +142,11 @@ public class YoyoMain extends Activity  implements DecoderInterface {
     @Override
     public void decodedEnd(String path) {
         if(this.path1.equals(path)){
+            KLog.e("路径为path111111");
             decoder1.destroy();
+            KLog.e(TAG, "decodedEnd: 停止线程" );
             if(funType == 0){
+                KLog.e(TAG, "decodedEnd: funtype 为 00000" );
                 decoder2.start();
             }
         }
@@ -144,12 +155,18 @@ public class YoyoMain extends Activity  implements DecoderInterface {
     @Override
     public void decodedAudioBuffer(String path, AudioPackage bytes) {
         if(funType == 0){
+            KLog.e("decodedAudioBuffer  funtype 等于000000");
             avcAppendEncoder.putAudioDataToCodec(bytes);
             avcAppendEncoder.processAudioEncodeOut();
         } else{
+            KLog.e("decodedAudioBuffer  funtype 等于111111");
+
             if(path.equals(path2)) {
+                KLog.e("路径222222222");
                 try {
-                YoyoContext.audioQueue.put(bytes);} catch (InterruptedException e) {
+                YoyoContext.audioQueue.put(bytes);
+                }
+                catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
